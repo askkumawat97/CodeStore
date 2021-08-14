@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	
+    <title>threejs generate data</title>
+
+	<style>
+		
+		#generate {
+			margin: 10px;
+			width: 200px;
+			height: 50px;
+			font-size: 16px;
+		}
+		
+		#downloadlink {
+			margin: 10px;
+			font-size: 30px;
+			display: none;
+		}
+		
+	</style>
+	
+</head>
+
+<body>
+	
+	<button id="generate">Generate data</button>
+	<a id="downloadlink">Download</a>
+	
+	<script>
+		
+		var data = '';
+		
+		var wallsCount = 2000;
+		var iterateCount = 2000;
+		
+		var rotRanges = [ 0, 45, 90, 135 ];
+		var offset = 20000;
+		var offsetHalf = offset / 2;
+		
+		
+		var file = null;
+		var filename = 'variables.js';
+		
+		var makeFile = function (fileData) {
+
+			var data = new Blob([fileData], {type: 'text/plain'});
+
+			// If we are replacing a previously generated file we need to
+			// manually revoke the object URL to avoid memory leaks.
+
+			if (file !== null) {
+
+				window.URL.revokeObjectURL(file);
+
+			}
+
+			file = window.URL.createObjectURL(data);
+
+			return file;
+
+		};
+
+
+		document.getElementById('generate').addEventListener('click', function () {
+			
+			generateData();
+			
+			var link = document.getElementById('downloadlink');
+			link.download = filename;
+			link.href = makeFile(textData);
+			link.style.display = 'block';
+			
+		}, false);
+		
+		
+		var generateData = function() {
+			
+			textData = '';
+			
+			textData += 'var iterateStart = 0;\n';
+			textData += 'var iterateCount = ' + iterateCount + ';\n';
+			textData += 'var walls = [ ';
+
+			
+			generateRandomWalls();
+			
+			
+			textData += ' ];';
+			
+		}
+		
+		var generateRandomWalls = function() {
+		
+			for( var i = 0; i < wallsCount; i++ ) {
+				
+				// [ breadth, height, length, xpos, ypos, zpos, xrot, yrot, zrot, name ]
+				textData += '[' + 
+					
+					'1' + ',' + 
+					'200' + ',' + 
+					( Math.floor( Math.random() * 10 ) * 100 + 100 ) + ',' + 
+					
+					( Math.floor( Math.random() * 100 ) * offset / 100 - offsetHalf ) + ',' + 
+					'0,' + 
+					( Math.floor( Math.random() * 100 ) * offset / 100 - offsetHalf ) + ',' + 
+					
+					'0' + ',' + 
+					rotRanges[ Math.floor( Math.random() * 4 ) ] + ',' + 
+					'0' + ',' + 
+					
+					'"wall-' + i + '"' + 
+				
+				'],';
+				
+			}
+			
+		}
+		
+	</script>
+
+</body>
+
+</html>

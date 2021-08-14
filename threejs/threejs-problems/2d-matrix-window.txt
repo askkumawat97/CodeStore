@@ -1,0 +1,77 @@
+
+consider (N * M) matrix and (X * Y) window, here X <= N, Y <= M.
+
+window is movable over matrix (left, right, up, down).
+on each movement, new data is updates(copy) in window array from matrix array.
+
+by brute force on each movement (X * Y) updates needs.
+
+
+
+
+Optimized solution:
+by keeping xHash and yHash, needs only X and only Y updates respectively.
+
+xHash and yHash are mapping of virtual to physical column and row index respectively.
+
+xHash <- [ 0 ... X-1 ]
+yHash <- [ 0 ... Y-1 ]
+
+physical_index_x = virtual_index_x + xHash
+physical_index_y = virtual_index_y + yHash
+
+
+
+
+if left-move then
+{
+	update in window[][xHash]
+	xHash--
+	xHash = sign( xHash ) * ( abs( xHash ) % X )
+}
+if right-move then
+{
+	update in window[][xHash]
+	xHash++
+	xHash = sign( xHash ) * ( abs( xHash ) % X )
+}	
+if up-move then
+{
+	update in window[yHash][]
+	yHash--
+	yHash = sign( yHash ) * ( abs( yHash ) % Y )
+}
+if down-move then
+{
+	update in window[yHash][]
+	yHash++
+	yHash = sign( yHash ) * ( abs( yHash ) % Y )
+}
+
+
+
+
+e.g.
+
+INITIAL:
+
+PHYSICAL INDEXES                             VIRTUAL INDEXES
+     |  [0]  [1]  [2]  [3]                        |  [0]  [1]  [2]  [3]
+-----+--------------------                   -----+--------------------
+[0]  |  00   01   02   03                    [0]  |  00   01   02   03
+[1]  |  10   11   12   13       xHash=0      [1]  |  10   11   12   13
+[2]  |  20   21   22   23       yHash=0      [2]  |  20   21   22   23
+[3]  |  30   31   32   33                    [3]  |  30   31   32   33
+
+
+AFTER MOVE RIGHT:
+
+PHYSICAL INDEXES                             VIRTUAL INDEXES
+     |  [0]  [1]  [2]  [3]                        |  [0]  [1]  [2]  [3]
+-----+--------------------                   -----+--------------------
+[0]  |  04   01   02   03                    [0]  |  01   02   03   04
+[1]  |  14   11   12   13       xHash=1      [1]  |  11   12   13   14
+[2]  |  24   21   22   23       yHash=0      [2]  |  21   22   23   24
+[3]  |  34   31   32   33                    [3]  |  31   32   33   34
+
+

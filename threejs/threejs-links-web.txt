@@ -1,0 +1,7 @@
+
+
+https://web.cs.wpi.edu/~matt/courses/cs563/talks/bsp/document.html
+
+https://hotgates.eu/bsp-measurement-unreal-engine/
+
+https://www.reddit.com/r/threejs/comments/84c6sb/find_which_object3ds_the_camera_can_see_in/

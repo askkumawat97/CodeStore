@@ -1,0 +1,14 @@
+
+check newObject is either front or back side of the hyperplane.
+front side is that, where origin exist and overlap to hyperplane.
+
+to check that consider a line from origin to location of newObject.
+Line = new Line( origin, newObject.position )
+
+if this line intersecting the hyperplane then newObject is in back side, otherwise in front side.
+
+
+Result = 'front side'
+if HyperPlane.intersectLine( Line ) == null  // return intersection point or null
+	Result = 'back side'
+
