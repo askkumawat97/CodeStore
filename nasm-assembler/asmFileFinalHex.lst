@@ -1,0 +1,37 @@
+       1                                           section data
+       2 00000000 616263642065666768617364FF00     	a1 db 'abcd efgh', "asd", 255,0
+       3 0000000E 616b6a64666861656b6c0A00         	a db 'akjdfhaekl',10,0
+       4 0000001A 61000000                         	b dd 'a'
+       5 0000001E 71730000                         	d dd 'qs'
+       6 00000022 72727400                         	e dd 'rrt'
+       7 00000026 67657274                         	f dd 'gert'
+       8 0000002A 736466657200000001000000         	g dd 'sdfer',1
+       9 00000036 7765727364660000                 	h dd 'wersdf'
+      10                                           
+      11                                           section .text
+      12                                           	global main
+      13                                           
+      14                                           main:
+      15 00000000 B8[2A000000]                     l4:	mov eax,g
+      16 00000005 83C00A                           l5:	add eax, 10
+      17 00000008 29D1                             l6:	sub ecx, edx
+      18 0000000A 8B0D[0E000000]                   	mov ecx, dword[a]
+      19 00000010 A17B000000                       	mov eax, dword[123]
+      20 00000015 F7257B000000                     	mul dword[123]
+      21 0000001B F735[0E000000]                   	div dword[a]
+      22 00000021 033D7B000000                     	add edi, dword[123]
+      23                                           
+      24 00000027 EB0C                             	jmp l1
+      25 00000029 EB0C                             	jmp l2
+      26 0000002B EB12                             	jmp l3
+      27 0000002D 8B3D7B000000                     	mov edi, dword[123]
+      28 00000033 EB00                             	jmp l1
+      29                                           l1:
+      30 00000035 EBFE                             	jmp l1
+      31 00000037 89C9                             l2:	mov ecx,ecx
+      32 00000039 EBC5                             	jmp l4
+      33 0000003B EBC8                             	jmp l5
+      34 0000003D EBC9                             	jmp l6
+      35 0000003F 39CB                             l3:	cmp ebx, ecx
+      36 00000041 CD80                             	int 80h
+      37                                           

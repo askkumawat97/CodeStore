@@ -1,0 +1,105 @@
+body {
+  background: url('../images/home.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: Arial;
+}
+
+.wrap_nav {
+  border-radius: 20px;
+  background: #111;
+  box-sizing: border-box;
+  padding: 20px;
+  color: #fff;
+  opacity: 0.7;
+}
+
+#nav_bar > span {
+  font-size: 32px;
+  margin: 20px;
+  color: #FFF;
+}
+
+.wrap {
+  max-width: 500px;
+  margin: auto;
+  border-radius: 20px;
+  background: #222;
+  box-sizing: border-box;
+  padding: 40px;
+  color: #fff;
+  margin-top: 100px;
+  opacity: 0.95;
+}
+
+#signup_form {
+  display: none;
+}
+
+#about_nav, #help_nav {
+  max-width: 700px;
+  display: none;
+  font-size: 16px;
+  width: 1000px;
+}
+
+#home_btn {
+	text-decoration: underline;
+}
+
+#signin_btn {
+	color: red;
+}
+
+#signin_btn, #signup_btn {
+  font-size: 32px;
+  font-style: italic;
+  padding: 20px;
+  margin: 28px;
+}
+
+form {
+  margin: 0;
+  padding: 0;
+}
+
+input[type=text], input[type=password], input[type=email] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 5px;
+  background: #222;
+  outline: none;
+  border: none;
+  border-bottom: 1px dotted #fff;
+  color: #fff;
+  border-radius: 5px;
+  margin: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+button[type=submit] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 0;
+  margin: 10px;
+  outline: none;
+  border: none;
+  background: green;
+  border-radius: 20px;
+  font-size: 20px;
+  color: #fff;
+  align-items: center;
+
+}
+
+button[type=submit] : hover {
+  background: red;
+}
+
+#signin_error, #signup_error {
+  font-style: italic;
+  text-align: center;
+  color: red;
+}

@@ -1,0 +1,40 @@
+     1                                  section data
+     2 00000000 616263642065666768-     	a1 db 'abcd efgh', "asd", 255,0
+     3 00000009 617364FF00         
+     4 0000000E 616B6A64666861656B-     	a db 'akjdfhaekl',10,0
+     5 00000017 6C0A00             
+     6 0000001A 61000000                	b dd 'a'
+     7 0000001E 71730000                	d dd 'qs'
+     8 00000022 72727400                	e dd 'rrt'
+     9 00000026 67657274                	f dd 'gert'
+    10 0000002A 736466657200000001-     	g dd 'sdfer',1
+    11 00000033 000000             
+    12 00000036 7765727364660000        	h dd 'wersdf'
+    13                                  
+    14                                  section .text
+    15                                  	global main
+    16                                  
+    17                                  main:
+    18 00000000 B8[2A000000]            l4:	mov eax,g
+    19 00000005 83C00A                  l5:	add eax, 10
+    20 00000008 29D1                    l6:	sub ecx, edx
+    21 0000000A 8B0D[0E000000]          	mov ecx, dword[a]
+    22 00000010 A17B000000              	mov eax, dword[123]
+    23 00000015 F7257B000000            	mul dword[123]
+    24 0000001B F735[0E000000]          	div dword[a]
+    25 00000021 033D7B000000            	add edi, dword[123]
+    26                                  
+    27 00000027 EB0C                    	jmp l1
+    28 00000029 EB0C                    	jmp l2
+    29 0000002B EB12                    	jmp l3
+    30 0000002D 8B3D7B000000            	mov edi, dword[123]
+    31 00000033 EB00                    	jmp l1
+    32                                  l1:
+    33 00000035 EBFE                    	jmp l1
+    34 00000037 89C9                    l2:	mov ecx,ecx
+    35 00000039 EBC5                    	jmp l4
+    36 0000003B EBC8                    	jmp l5
+    37 0000003D EBC9                    	jmp l6
+    38 0000003F 39CB                    l3:	cmp ebx, ecx
+    39 00000041 CD80                    	int 80h
+    40                                  

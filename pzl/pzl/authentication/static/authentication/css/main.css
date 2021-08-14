@@ -1,0 +1,348 @@
+
+body {
+  background: url('../images/main.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: Arial;
+}
+
+
+/*###############################################*/
+#footer_table {
+  display: none;
+}
+
+#refresh_form, #friendReq_form {
+  border-radius: 20px;
+  box-sizing: border-box;
+  margin: 10px;
+  padding: 20px;
+  font-size: 32px;
+  color: #FFF;
+  outline: none;
+  border: none;
+  align-items: center;
+  background: lightblue;
+  width: 250px;
+  height: auto;
+}
+
+#refresh_btn, #friendReq_btn {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 40px;
+  
+}
+
+#context_user, #friendReq_user, #friendReq_action, #friendReq_friendId, #gamePlay_time {
+  display: block;
+  margin: 0 0 5px 0;
+  padding: 0;
+  width: 100%;
+  height: 20px;
+}
+/*###############################################*/
+
+
+.wrap_nav {
+  border-radius: 20px;
+  box-sizing: border-box;
+  font-size: 32px;
+  text-align: right;
+  margin-top: 20px;
+  color: #FFF;
+}
+
+#forGame_btnForm { display: none; }
+#signout_btnForm { display: inline; }
+
+#board_btn, #store_btn, #signout_btn, #forGame_btn, #welcomeUser, #replay_btn {
+  border-radius: 20px;
+  background: #111;
+  box-sizing: border-box;
+  margin: 10px;
+  padding: 20px;
+  font-size: 32px;
+  color: #FFF;
+  outline: none;
+  border: none;
+  align-items: center;
+}
+
+#welcomeUser {
+  display: inline;
+}
+
+#board_btn {
+  display: none;
+  background: orange;
+}
+
+#store_btn {
+  display: inline;
+  background: green;
+}
+
+#forGame_btn {
+  background: green;
+}
+
+#replay_btn {
+  display: none;
+  background: orange;
+}
+
+#signout_btn { background: red; }
+
+.wrap {
+  border-radius: 20px;
+  box-sizing: border-box;
+  margin: 10px;
+  padding: 20px;
+  font-size: 32px;
+  color: #FFF;
+  outline: none;
+  border: none;
+  align-items: center;
+}
+
+#boardArea::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+}
+#boardArea {
+  display: block;
+  min-width: 500px;
+  background: #CCC;
+  overflow: scroll;
+  overflow-y: hidden;
+}
+
+#boardArea_board {
+  font-size: 64px;
+  color: orange;
+}
+
+
+
+#storeArea {
+  display: none;
+  min-width: 500px;
+  background: #CCC;
+}
+#storeArea_store {
+  font-size: 64px;
+  color: green;
+}
+#storeArea_vault {
+  color: magenta;
+}
+#storeArea_price {
+  display: inline-block;
+  position: relative;
+  width: 200px;
+}
+#storeArea_price img {
+  position: absolute;
+  top: 22px;
+  right: 5px
+}
+#storeArea_rupee {
+  display: inline-block;
+  width: 200px;
+  color: red;
+}
+#storeArea_coins {
+  display: inline-block;
+  background: orange;
+}
+#storeArea_buybtn {
+  background: green;
+}
+
+
+
+
+#paymentProcess {
+  display: none;
+  background: lightgreen;
+}
+#paymentStatus_success {
+  display: none;
+  background: lightblue;
+}
+#paymentStatus_failed {
+  display: none;
+  background: red;
+}
+#paymentProcess div {
+  display: inline-block;
+}
+#paymentProcessing {
+  border: 4px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 20px;
+  height: 20px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+#usersList*::-webkit-scrollbar { width: 12px; }
+#usersList*::-webkit-scrollbar-track { background: #a56464; }
+#usersList*::-webkit-scrollbar-thumb {
+  background-color: red;
+  border-radius: 20px;
+}
+
+#usersListContainer {
+	display: inline-block;
+	width: 320px;
+	background: #a56464;
+	padding: 0 20px 0 0;
+}
+
+#usersList {
+	width: 300px;
+	height: 500px;
+	margin: 0;
+	background: #a56464;
+	overflow-y: scroll;
+}
+
+#usersListTable {
+
+}
+#usersListTable button {
+  border-radius: 5px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 32px;
+  color: #FFF;
+  background: lightgreen;
+  outline: none;
+  border: none;
+  align-items: center;
+}
+
+#playerBoard {
+  display: none;
+  width: 320px;
+  height: 500px;
+  background: #a56464;
+}
+
+#gameArea {
+	display: inline-block;
+	background: #872349;
+	width: 500px;
+	height: 500px;
+
+}
+
+/*
+#gameGrid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  background-color: #2196F3;
+  width: 450px;
+  height: 450px;
+}
+.grid {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  width: 150px;
+  height: 150px;
+}
+*/
+
+#gameGrid {
+  width: 450px;
+  height: 450px;
+  position: relative;
+}
+.grid {
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  width: 150px;
+  height: 150px;
+}
+
+#gameGrid1 { position: absolute; left: 0; top: 0; }
+#gameGrid2 { position: absolute; left: 150px; top: 0; }
+#gameGrid3 { position: absolute; left: 300px; top: 0; }
+#gameGrid4 { position: absolute; left: 0; top: 150px; }
+#gameGrid5 { position: absolute; left: 150px; top: 150px; }
+#gameGrid6 { position: absolute; left: 300px; top: 150px; }
+#gameGrid7 { position: absolute; left: 0; top: 300px; }
+#gameGrid8 { position: absolute; left: 150px; top: 300px; }
+#gameGrid9 { position: absolute; left: 300px; top: 300px; }
+
+
+
+#board_player1 {
+  background: lightgreen;
+  text-align: center;
+}
+
+#board_player2 {
+  background: lightgreen;
+  text-align: center;
+}
+
+#player_vs {
+  color: lime;
+  text-align: center;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 32px;
+}
+
+#board_player_time {
+  background: darkred;
+  text-align: center;
+  font-weight: bold;
+  font-size: 48px;
+  margin-top: 40px;
+}
+
+#gamePlay_msg {
+  display: none;
+  text-align: center;
+  border-radius: 10px;
+  box-sizing: border-box;
+  margin-top: 20px;
+  padding: 20px;
+  font-size: 32px;
+  color: #FFF;
+  outline: none;
+  border: none;
+  align-items: center;
+}
+
+#batFor {
+  color: orange;
+  text-align: center;
+  margin-top: 70px;
+}
+
+
+
+
+

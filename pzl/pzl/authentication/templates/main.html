@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Pzl {% endblock title %}</title>
+
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'authentication/images/favicon.ico' %}"/>
+  	<link rel="stylesheet" type="text/css" href="{% static 'authentication/css/main.css' %}" >
+  	<script src="{% static 'authentication/modules/jquery.min.js' %}" ></script>
+  	<script src="{% static 'authentication/scripts/main.js' %}" ></script>
+  	<!--img src="{% static 'authentication/images/puzzle/puzzle1.jpg' %}" -->
+
+
+</head>
+<body>
+
+  <div id="nav_bar" class="wrap_nav">
+
+    {% if user.is_authenticated %}
+    <span id="welcomeUser">
+      Welcome <strong>{{request.user}}</strong>
+      <!--a href="/logout">Logout</a-->
+    </span>
+    {% endif %}
+	
+	<div id="replay_btn">Replay</div>
+    <div id="board_btn">Board</div>
+    <div id="store_btn">Store</div>
+
+    <form id="forGame_btnForm" action="{% url 'forGame' %}" method="post">
+      {% csrf_token %}
+      <button type="Submit" id="forGame_btn">Init Game</button>
+    </form>
+
+    <form id="signout_btnForm" action="/logout" method="post">
+      {% csrf_token %}
+      <button type="Submit" id="signout_btn">Log Out</button>
+    </form>
+
+  </div>
+
+
+
+
+  <div id="boardArea" class="wrap">
+    <table>
+    <tr>
+      <td>
+        <div id="gameArea" class="wrap">
+          <div id="gameGrid">
+
+            <div id="gameGrid1" class="grid"><img src="{% static 'authentication/images/puzzle1/image1.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid2" class="grid"><img src="{% static 'authentication/images/puzzle1/image2.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid3" class="grid"><img src="{% static 'authentication/images/puzzle1/image3.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid4" class="grid"><img src="{% static 'authentication/images/puzzle1/image4.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid5" class="grid"><img src="{% static 'authentication/images/puzzle1/image5.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid6" class="grid"><img src="{% static 'authentication/images/puzzle1/image6.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid7" class="grid"><img src="{% static 'authentication/images/puzzle1/image7.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid8" class="grid"><img src="{% static 'authentication/images/puzzle1/image8.jpg' %}" width="150px" height="150px"></div>
+            <div id="gameGrid9" class="grid"><img src="{% static 'authentication/images/puzzle1/image9.jpg' %}" width="150px" height="150px"></div>
+
+          </div>
+        </div>
+      </td>
+      <td>
+        <div id="usersListContainer" class="wrap">
+          <div id="usersList" class="wrap">user list</div>
+        </div>
+
+        <div id="playerBoard" class="wrap">
+          <div id="board_player1" class="wrap"></div>
+          <div id="player_vs"></div>
+          <div id="board_player2" class="wrap"></div>
+          <div id="board_player_time" class="wrap"></div>
+          <div id="gamePlay_msg"></div>
+          <div id="batFor"> Bat 1000 Coins </div>
+        </div>
+      </td>
+    </tr>
+    </table>
+  </div>
+
+
+  <div id="storeArea" class="wrap">
+    <div id="storeArea_store" class="wrap">STORE</div>
+
+    <div id="storeArea_vault" class="wrap">Vault : <span id="storeArea_vaultRemain">0</span> Coins</div>
+
+    <div id="paymentProcess" class="wrap">
+      <div id="paymentProcessing"></div>
+      <div>processing payment</div>
+  </div>
+  <div id="paymentStatus_success" class="wrap"></div>
+  <div id="paymentStatus_failed" class="wrap"></div>
+
+    <form id="storeArea_form" action="{% url 'buyCoins' %}" method="post">
+      {% csrf_token %}
+
+      <div id="storeArea_price">
+        <input name="price" type="number" value="10" id="storeArea_rupee" class="wrap"></input>
+        <img id="img_coin" src="../static/authentication/images/coins/coin1.png" width=50 />
+      </div>
+
+      <div id="storeArea_coins" class="wrap">
+        <span id="storeArea_coinsCount">1000</span>
+        &#9921;
+      </div>
+
+    <button type="Submit" id="storeArea_buybtn" class="wrap">Buy</button>
+  </form>
+  </div>
+
+
+
+  <table id="footer_table">
+  <tr>
+  <td>
+	  <form id="friendReq_form" action="{% url 'friendRequest' %}" method="post">
+		{% csrf_token %}
+		<input name="user" type="text" value="{{user}}" id="friendReq_user"></input>
+		<input name="action" type="text" value="add" id="friendReq_action"></input>
+		<input name="friendId" type="number" value="" id="friendReq_friendId"></input>
+		<input name="time" type="number" value="" id="gamePlay_time"></input>
+		<button type="Submit" id="friendReq_btn">Send Request</button>
+	  </form>
+  </td>
+  <td>
+	  <form id="refresh_form" action="{% url 'refresh' %}" method="post">
+		{% csrf_token %}
+		<input name="user" type="text" value="{{user}}" id="context_user"></input>
+		<button type="Submit" id="refresh_btn">Refresh</button>
+	  </form>
+  </td>
+  </tr>
+  </table>
+
+</body>
+</html>

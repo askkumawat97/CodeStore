@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %} Pzl {% endblock title %}</title>
+
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'authentication/images/favicon.ico' %}"/>
+    <link rel="stylesheet" href="{% static 'authentication/css/home.css' %}">
+	<script src="{% static 'authentication/modules/jquery.min.js' %}"></script>
+	<script src="{% static 'authentication/scripts/home.js' %}"></script>
+	<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
+  </head>
+  <body onload="init()">
+
+    <div id="nav_bar" class="wrap_nav">
+  		<span id="home_btn">Home</span>
+  		<span id="about_btn">About</span>
+  		<span id="help_btn">Help</span>
+  	</div>
+
+    <div id="home_nav" class="wrap">
+  	  <span id="signin_btn">Sign in</span>
+  	  <span id="signup_btn">Sign up</span>
+
+      <!-- Login Modal -->
+      <form id="signin_form" action="/login" method="POST">
+        {% csrf_token %}
+        <input id="loginusername" name='loginusername'  type="text" placeholder="username" required>
+        <input id="loginpassword" name='loginpassword'  type="password" placeholder="password" required>
+        <br>
+        <br>
+        <center><button type="Submit" >Sign in</button></center>
+        <br>
+        <br>
+
+        <div id="signin_error">
+          {% for message in messages  %}
+          <strong>Message : </strong> {{ message }}
+          {% endfor %}
+        </div>
+
+      </form>
+
+
+      <!-- SignUp Modal -->
+      <form id="signup_form"  action= "/signup" method='post'>
+        <input type="text" id="username" name="username" placeholder="username" required>
+        <input type="text" id="fname" name="fname" placeholder="First Name" required>
+        <input type="text" id="lname" name="lname" placeholder="Last Name" required>
+        <!--input type="email" id="email" name="email" placeholder="name@gmail.com" required-->
+        <input type="text" id="email" name="email" placeholder="name@gmail.com" required>
+        <input type="password" id="pass1" name="pass1"  placeholder="password" required>
+        <input type="password" id="pass2" name="pass2"  placeholder="confirm password" required>
+        <br>
+        {% csrf_token %}
+        <center><button type="submit">Sign up</button></center>
+        <br>
+
+        <div id="signup_error">
+          {% for message in messages  %}
+          <strong>Message : </strong> {{ message }}
+          {% endfor %}
+        </div>
+
+      </form>
+
+    </div>
+
+
+    <div id="about_nav" class="wrap">
+  		<TT>
+  			<br>About :
+  			<br>
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Version : 1.0.0
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Dept : Pune University Computer Science Department
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Subject : Programing Paradism
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Guide : Tushar Pathare
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>Developers Contact :
+  			<br>
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Ashok Kumawat : ashokjkumawat007@gmail.com
+  			<br>&nbsp;&nbsp;&nbsp;&nbsp;Neelesh Rajput : neeleshrajput.official@gmail.com
+  			<br>
+  			<br>
+  		</TT>
+    </div>
+
+    <div id="help_nav" class="wrap">
+    	<TT>
+    		<br>
+    		<br>click on "Refresh" button each time to update state of game
+    		<br>
+    		<br>In users list click on request button (send, cancle, accept)
+    		<br>&nbsp;&nbsp;&nbsp;&nbsp;then click on "Send Request" button
+    		<br>
+    		<br>
+    	</TT>
+    </div>
+
+
+  </body>
+</html>
