@@ -1,0 +1,50 @@
+
+DATABASE: db_3dsim
+
+"terrains" are static so no need in database.
+
+we can put the [static location X Y Z] of terrains, architectsVertual, treesVertual inside object file, only dynamic assets( objectsVertual: their locations may change ) location is stored in database.
+rotation(X,Y,Z) is not considered.
+
+"parrentMapper" is gives type of the parent for search in respective table.
+
+_parrentId is one of the ( users, terrains, architects, trees, objects )
+
+assetPathId=assetPath(id) is the ForeignKey
+
+
+
+
+
+
+#### SCHEMA ####
+
+parrentMapper		= id, tableName
+						1 'users'
+						2 'terrains'
+						3 'architects'
+						4 'trees'
+						5 'objects'
+
+assetPath			= id, path
+						1 'assets/user/'
+						2 'assets/terrains/'
+						3 'assets/architects/'
+						4 'assets/trees/'
+						5 'assets/objects/'
+
+users				= id, userLocId, world_gridInd, gridPosInd, assetPathId=assetPath(id), assetFileName, name
+
+#terrains			= id, [coordX, coordY, coordZ,] assetPathId=assetPath(id), assetFileName
+
+architectsVertual	= id, [coordX, coordY, coordZ,] physicalId=architectsPhysical(id), parentId=terrains(id)
+treesVertual		= id, [coordX, coordY, coordZ,] physicalId=treesPhysical(id), parentId=terrains(id)
+objectsVertual		= id, coordX, coordY, coordZ, physicalId=objectsPhysical(id), parentId[=_parrentId(id)], parrentMapperId=parrentMapper(id)
+
+architectsPhysical	= id, assetPathId=assetPath(id), assetFileName
+treesPhysical		= id, assetPathId=assetPath(id), assetFileName
+objectsPhysical		= id, assetPathId=assetPath(id), assetFileName
+
+
+
+

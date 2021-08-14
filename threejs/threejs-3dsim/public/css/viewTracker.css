@@ -1,0 +1,30 @@
+
+
+#gridTable tr td {
+	width: 20px;
+	height: 20px;
+}
+
+.grid {
+	color: green;
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+}
+.gridVal {
+	border-left: 1px solid black;
+}
+#gridTable tr:last-child > td {
+	border-bottom: 1px solid black;
+}
+.view {
+	color: orange;
+	border-top: 1px solid black;
+}
+.viewVal {
+	color: red;
+}
+#gridTable tr > td:last-child {
+	border-right: 1px solid black;
+}
+
+

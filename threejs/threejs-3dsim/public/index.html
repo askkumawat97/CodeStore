@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>3Dsim build</title>
+	<meta charset="utf-8">
+	
+	<link rel="stylesheet" href="./css/viewTracker.css">
+	
+	<script src="./scripts/variables.js"></script>
+	
+	<script src="./modules_inbuilt/jquery/jquery.min.js"></script>
+	
+	<style>
+		#control-and-tracker {
+			position: absolute;
+			top: 20px;
+			left: 20px;
+		}
+	</style>
+	
+</head>
+
+<body>
+<div id="control-and-tracker">
+<input type="text" id="login_inpt" placeholder="Enter username"  value="user1" />
+<input type="button" id="login_btn" value="Login" />
+<input type="button" id="leaveSession" value="leave session" style="display:none" />
+<br>
+<br>
+<div id="viewTrackerArea"></div>
+<br>
+</div>
+
+<script type="module">
+
+import * as THREE from './modules_inbuilt/threejs/three.module.js';
+import { OrbitControls } from './modules_inbuilt/threejs/controls/OrbitControls.js';
+import { GLTFLoader } from './modules_inbuilt/threejs/loaders/GLTFLoader.js';
+
+
+import { ViewTracker } from './modules_userDefined/viewTracker.js'
+import { ViewManager } from './modules_userDefined/viewManager.js'
+import { AssetLoader } from './modules_userDefined/assetLoader.js'
+import { AssetLoaderUser } from './modules_userDefined/assetLoaderUser.js'
+import { AssetLoaderOtherUsers } from './modules_userDefined/assetLoaderOtherUsers.js'
+import { AssetRemover } from './modules_userDefined/assetRemover.js'
+
+
+
+var simArea_width = window.innerWidth - 30;
+var simArea_height = window.innerHeight;
+var simArea_devicePixelRatio = window.devicePixelRatio;
+//simArea_width = 1000;
+//simArea_height = 500;
+
+var camera, controls, scene_main, renderer;
+var viewManager, viewTracker;
+var assetLoader, assetLoaderUser, assetLoaderOtherUsers, assetRemover;
+const gltfLoader = new GLTFLoader();
+
+var userName = '';
+var userId = 0;
+var userLocId = 0; //this is index of usersData(server side) to findout user location.
+var userMesh;
+var canUpdateUser = 1; //only update the user location if =1 to prevent from userLocId mismatch (while updating gridInd the userLocId also updates)
+var userMoveSpeed = 1; //meter displacement for each movement
+var blockSize = 20; // not usefull, use world_gridSize
+var blockSizeTerrain = 80; //not usefull
+
+var removableAssets = [];
+
+
+
+
+$("#login_btn").click( function() {
+	
+	userName = $("#login_inpt").val();
+	
+	$("#login_inpt").hide();
+	$("#login_btn").hide();
+	$("#leaveSession").show();
+	
+	$("#viewTrackerButton").show();
+	
+	init();
+	//render(); // remove when using next line for animation loop (requestAnimationFrame)
+	animate();
+		
+});
+
+$("#leaveSession").click( function() {
+	
+	assetLoaderUser.leaveSession( userLocId );
+	userId = 0;
+	
+	location.reload(); //to refresh the page
+	//clear all data
+	
+});
+
+function init() {
+	
+	scene_main = new THREE.Scene();
+	scene_main.background = new THREE.Color( 0xcccccc );
+	scene_main.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+	scene_main.name = "scene_main";
+	
+	const light = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.75 );
+	light.position.set( 1, 1, 1 );
+	light.name = "scene_light";
+	scene_main.add( light );
+
+	renderer = new THREE.WebGLRenderer({
+		antialias: true
+	});
+	renderer.setPixelRatio( simArea_devicePixelRatio );
+	renderer.setSize( simArea_width, simArea_height );
+	document.body.appendChild( renderer.domElement );
+
+	camera = new THREE.PerspectiveCamera( 60, simArea_width / simArea_height, 1, 1000 );
+	camera.position.set(0, 200, 0);
+	camera.name = "scene_camera";
+	// controls
+
+	controls = new OrbitControls( camera, renderer.domElement );
+	viewTracker = new ViewTracker();
+	viewManager = new ViewManager();
+	assetLoader = new AssetLoader( gltfLoader, scene_main, viewManager );
+	assetLoaderUser = new AssetLoaderUser( gltfLoader, scene_main );
+	//assetLoaderOtherUsers = new AssetLoaderOtherUsers( gltfLoader, scene_main );
+	assetRemover = new AssetRemover( gltfLoader, scene_main, viewManager );
+	
+	
+	//controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+	//controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+	//controls.dampingFactor = 0.05;
+
+	controls.screenSpacePanning = false;
+	controls.minDistance = 10;
+	controls.maxDistance = 500;
+	controls.maxPolarAngle = 3; //Math.PI / 2;
+
+
+	//#########################################################################
+	//object at origin
+	const geometryOrigin = new THREE.BoxGeometry( 1, 1, 1 );
+	var meshOrigin = new THREE.Mesh( geometryOrigin, new THREE.MeshNormalMaterial({ flatShading: true }) );
+	meshOrigin.position.x = 0;
+	meshOrigin.position.y = 0;
+	meshOrigin.position.z = 0;
+	meshOrigin.updateMatrix();
+	meshOrigin.name = 'obj_origin';
+	scene_main.add(meshOrigin);
+	
+	//grids
+	var lineGridShiftX = world_gridSize * world_width / 2;
+	var lineGridShiftY = world_gridSize * world_height / 2;
+	const geometryGrid = new THREE.PlaneGeometry(
+		world_gridSize * world_width, 
+		world_gridSize * world_height, 
+		world_width, 
+		world_height 
+	);
+	const wireframeGrid = new THREE.WireframeGeometry( geometryGrid );
+	const lineGrid = new THREE.LineSegments( wireframeGrid );
+	lineGrid.material.opacity = 1;
+	lineGrid.material.depthTest = false;
+	lineGrid.material.transparent = false;
+	lineGrid.rotation.x = Math.PI / 2;
+	lineGrid.position.x = lineGridShiftX;
+	lineGrid.position.z = lineGridShiftY;
+	lineGrid.name = 'obj_lineGrid';
+	scene_main.add( lineGrid );
+	
+	//#########################################################################
+	
+	assetLoaderUser.loadUser( userName, world_width, world_gridSize, function(){callback_getUser();} );
+	
+}
+
+function callback_getUser() {
+	//get the user object after loading the user asset
+	
+	userMesh = assetLoaderUser.getUserAsset();
+	userId = assetLoaderUser.getUserId();
+	userLocId = assetLoaderUser.getUserLocId();
+	world_gridInd = assetLoaderUser.getWorld_gridInd();
+	gridIndX = world_gridInd % world_width;
+	gridIndY = Math.floor( world_gridInd / world_width );
+	world_gridIndPrev = world_gridInd;
+	gridPosInd = assetLoaderUser.getGridPosInd();
+	
+	window.addEventListener('resize', onWindowResize, false);
+	window.addEventListener('keydown', onKeyDown, false);
+	
+	viewManager.initViewBase();
+	viewTracker.initViewTracker();
+	assetLoader.initAssets( scene_main, world_gridInd, world_width );
+	
+	var updatePeriodically = window.setInterval( function() {
+		//clearInterval(updatePeriodically)
+		
+		viewTracker.updateViewTracker( viewManager.getViewData() );
+		//viewManager.showViewData();
+		
+	}, 1000);
+	
+
+}
+
+function onWindowResize() {
+
+	camera.aspect = simArea_width / simArea_height;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( simArea_width, simArea_height );
+
+}
+
+function onKeyDown() {
+	
+	var flag = 0;
+	var keyCode = event.which;
+	var posX = userMesh.position.x;
+	var posY = userMesh.position.z;
+	
+	if ( keyCode == 65 && posX - userMoveSpeed >= 0 ) {
+		//left _A
+		userMesh.position.x -= userMoveSpeed;
+		gridPosX -= userMoveSpeed;
+		
+		if( gridPosX < 0 ) {
+		
+			gridPosX = gridPosX + world_gridSize;
+			world_gridInd -= 1;
+			gridIndX -= 1;
+			
+		}
+		flag = 1;
+		
+	} else if ( keyCode == 68 && posX + userMoveSpeed < world_width * world_gridSize ) {
+		//right _D
+		userMesh.position.x += userMoveSpeed;
+		gridPosX += userMoveSpeed;
+		
+		if( gridPosX >= world_gridSize ) {
+		
+			gridPosX = gridPosX - world_gridSize;
+			world_gridInd += 1;
+			gridIndX += 1;
+			
+		}
+		flag = 1;
+		
+	} else if ( keyCode == 87 && posY - userMoveSpeed >= 0 ) {
+		//up _W
+		userMesh.position.z -= userMoveSpeed;
+		gridPosY -= userMoveSpeed;
+		
+		if( gridPosY < 0 ) {
+		
+			gridPosY = gridPosY + world_gridSize;
+			world_gridInd -= world_width;
+			gridIndY -= 1;
+			
+		}
+		flag = 1;
+		
+	} else if ( keyCode == 83 && posY + userMoveSpeed < world_height * world_gridSize ) {
+		//down _S
+		userMesh.position.z += userMoveSpeed;
+		gridPosY += userMoveSpeed;
+		
+		if( gridPosY >= world_gridSize ) {
+		
+			gridPosY = gridPosY - world_gridSize;
+			world_gridInd += world_width;
+			gridIndY += 1;
+			
+		}
+		flag = 1;
+		
+	} else if ( keyCode == 32 ) {
+		//reset _SPACE
+		userMesh.position.x = 0;
+		userMesh.position.y = 0;
+		userMesh.position.z = 0;
+		flag = 1;
+		
+	} else if ( keyCode == 67 ) {
+		//show scene elements _C
+		scene_main.traverse( function ( child ) {
+			console.log( child.name );
+		});
+		
+		return;
+	}
+	
+	userMesh.updateMatrix();
+	
+	/*
+	if( 0 ) console.log( gridPosX, gridPosY, world_gridInd );
+	if( 0 ) console.log(
+		"userLocId:", userLocId,
+		"\ngridPosInd:", gridPosInd,
+		"\nworld_gridIndPrev:", world_gridIndPrev,
+		"\nworld_gridInd:", world_gridInd
+	);
+	*/
+	
+	if( flag == 1 && canUpdateUser == 1 ) {
+		
+		var side = world_gridInd - world_gridIndPrev;
+		gridPosInd = gridPosY * world_gridSize + gridPosX;
+		
+		if( side == 0 ) {	
+			
+			assetLoaderUser.updateUserLoc( userLocId, world_gridInd, gridPosInd );
+			
+		} else { //changing grid
+			
+			//console.log( "UPDATING GRID" );
+			
+			canUpdateUser = 0;
+			assetLoaderUser.updateUserGrid( userId, userLocId, world_gridIndPrev, world_gridInd, gridPosInd, function(){callback_updateUserGridAndLocId();} );
+			
+			
+			var next_gridInd = world_gridInd + side
+			var gridNeighbour = world_width - Math.abs( side ) + 1;
+			
+			var flagM = '';
+			var gridInd = [];
+			var gridFlag = 0;
+			var temp2;		// top         / left
+			var temp3;		// bottom      / right
+			var boundary;	// world_width / world_height
+			
+			//for clearGrids
+			var clearFlag = 0;
+			var shiftPhase1;	// row    / column
+			var shiftPhase2;	// column / row
+			var shiftBy;		// 1      / world_width
+			
+			if( side == -1 ) {
+				
+				//for clearGrids
+				shiftPhase1 = view_width_oneside + 1;
+				shiftPhase2 = view_height_oneside;
+				shiftBy = 1;
+				if( gridIndX + shiftPhase1 < world_width )
+					clearFlag = 1;
+				
+				
+				flagM = 'left';
+				if( gridIndX > 0 ) {
+					gridFlag = 1;
+					temp2 = gridIndY-1;
+					temp3 = gridIndY+1;
+					boundary = world_height;
+				}
+				
+			} else if( side == 1 ) {
+				
+				//for clearGrids
+				shiftPhase1 = -(view_width_oneside + 1);
+				shiftPhase2 = view_height_oneside;
+				shiftBy = 1;
+				if( gridIndX + shiftPhase1 > -1 )
+					clearFlag = 1;
+				
+				
+				flagM = 'right';
+				if( gridIndX < world_width - 1 ) {
+					gridFlag = 1;
+					temp2 = gridIndY-1;
+					temp3 = gridIndY+1;
+					boundary = world_height;
+				}
+				
+			} else if( side == -world_width ) {
+				
+				//for clearGrids
+				shiftPhase1 = view_height_oneside + 1;
+				shiftPhase2 = view_width_oneside;
+				shiftBy = world_width;
+				if( gridIndY + shiftPhase1 < world_height )
+					clearFlag = 1;
+				
+				
+				flagM = 'top';
+				if( gridIndY > 0 ) {
+					gridFlag = 1;
+					temp2 = gridIndX-1;
+					temp3 = gridIndX+1;
+					boundary = world_width;
+				}
+				
+			} else if( side == world_width ) {
+				
+				//for clearGrids
+				shiftPhase1 = -(view_height_oneside + 1);
+				shiftPhase2 = view_width_oneside;
+				shiftBy = world_width;
+				if( gridIndY + shiftPhase1 > -1 )
+					clearFlag = 1;
+				
+				
+				flagM = 'bottom';
+				if( gridIndY < world_height - 1 ) {
+					gridFlag = 1;
+					temp2 = gridIndX-1;
+					temp3 = gridIndX+1;
+					boundary = world_width;
+				}
+				
+			}
+			
+			//CLEAR GRIDS
+			if( clearFlag == 1 ) {
+				
+				removableAssets.push( world_gridInd + shiftPhase1 * shiftBy );
+				for( var i = 1; i <= shiftPhase2; i++ ) {
+					removableAssets.push( -i );
+					removableAssets.push( i );
+				}
+				assetRemover.clearGrids( removableAssets, world_width - shiftBy + 1 );
+				removableAssets = [];
+				
+			}
+			
+			//LOAD GRIDS
+			if( gridFlag == 1 ) {
+			
+				if( !viewManager.isLoaded( next_gridInd ) )
+					gridInd.push( next_gridInd );
+				if( temp2 >= 0 && !viewManager.isLoaded( next_gridInd - gridNeighbour ) )
+					gridInd.push( next_gridInd - gridNeighbour );
+				if( temp3 < boundary && !viewManager.isLoaded( next_gridInd + gridNeighbour ) )
+					gridInd.push( next_gridInd + gridNeighbour );
+					
+				//console.log("gridInd: ", gridInd);
+				
+				
+				viewManager.viewShift( flagM, function() {
+					view_base += side;
+					assetLoader.loadAssets( scene_main, gridInd );
+				});
+			}
+			
+			
+			world_gridIndPrev = world_gridInd;
+		}
+		
+	}
+	
+}
+
+
+function callback_updateUserGridAndLocId() {
+	userLocId = assetLoaderUser.getUserLocId();
+	canUpdateUser = 1;
+}
+
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	//controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
+
+	render();
+
+}
+
+function render() {
+
+	renderer.render( scene_main, camera );
+
+}
+
+</script>
+
+
+</body>
+</html>
+
+

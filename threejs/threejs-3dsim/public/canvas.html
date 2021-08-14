@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+<meta charset = "UTF-8">
+<title> 3DSIM Main </title>
+<script src="./modules_inbuilt/jquery/jquery.min.js"></script>
+<script>
+
+var canvasScale = 1; // 1x by default
+
+var blockCountX = 10;
+var blockCountY = 10;
+var blockSize = 20;
+
+var coordX = 0, blockX = 0, pblockX = 0; //prev pblockx
+var coordY = 0, blockY = 0, pblockY = 0; //prev pblocky
+
+//canvas pointer
+var ptrSpeed = 4;
+
+//unnecessory blocks far from pointer must be freed
+var freedX = 3; // > 0, only blocks left/right are available, remaining are freed
+var freedY = 3; // > 0, only blocks top/bottom are available, remaining are freed
+var fillBlocks = [];
+var cleanBlocks = [];
+var blockCleaning = true;
+
+assetColor = {staticAssetsArchitects: "blue", staticAssetsTrees: "orange"};
+
+var blockMatrix = [];
+for(i=0; i<blockCountX; i++) {
+	blockMatrix.push([]);
+	for(j=0; j<blockCountY; j++) {
+		blockMatrix[i].push(0);
+	}
+}
+
+
+
+$( document ).ready(function() {
+	createCanvas();
+	
+	initCanvas();
+	
+	window.addEventListener('keydown', onKeyDown);
+	
+});
+
+
+
+function parseBlocks(axis, side) {
+	//side is +ve(right,down) or -ve(left,up)
+	fillBlocks = []
+	var flag = 0;
+	var tempX1 = 0, tempX2 = 0, tempY1 = 0, tempY2 = 0;
+	
+	if(axis == "x") {
+		if(blockCleaning == true) {
+			var x = blockX + (-side)*(freedX + 1);
+			var y = blockY - freedY - 1;
+			var z = (freedY+1)*2+1;
+			for(i=0; i<z; i++)
+				cleanBlocks.push( [x, y + i ] );
+		}
+		
+		tempX1 = (blockX + side) * blockSize;
+		tempX2 = tempX1 + blockSize;
+		tempY1 = (blockY - 1) * blockSize;
+		tempY2 = tempY1 + (3 * blockSize);
+		
+		if( blockMatrix[ blockX + side ][ blockY - 1 ] != 1 )
+			fillBlocks.push( [blockX + side, blockY - 1] );
+		else {
+			tempY1 = (blockY) * blockSize;
+			flag = 1;
+		}
+		
+		if( blockMatrix[ blockX + side ][ blockY ] != 1 )
+			fillBlocks.push( [blockX + side, blockY] );
+		else if(flag == 1)
+			tempY1 = (blockY + 1) * blockSize;
+		
+		if( blockMatrix[ blockX + side ][ blockY + 1 ] != 1 )
+			fillBlocks.push( [blockX + side, blockY + 1] );
+		else
+			tempY2 = tempY2 - blockSize;
+		
+		if(tempY1 < tempY2) {
+			console.log(tempY1+" "+tempY2);
+			loadAssets(tempX1, tempX2, tempY1, tempY2);
+		}
+		
+	}
+	else if(axis == "y") {
+		if(blockCleaning == true) {
+			var x = blockX - freedX - 1;
+			var y = blockY + (-side)*(freedY + 1);
+			var z = (freedX+1)*2+1;
+			for(i=0; i<z; i++)
+				cleanBlocks.push( [x + i, y ] );
+		}
+		
+		tempX1 = (blockX - 1) * blockSize;
+		tempX2 = tempX1 + (3 * blockSize);
+		tempY1 = (blockY + side) * blockSize;
+		tempY2 = tempY1 + blockSize;
+		
+		console.log( blockMatrix[ blockX - 1 ][ blockY + side ] );
+		
+		if( blockMatrix[ blockX - 1 ][ blockY + side ] != 1 )
+			fillBlocks.push( [blockX - 1, blockY + side ] );
+		else {
+			tempX1 = (blockX) * blockSize;
+			flag = 1;
+		}
+		
+		if( blockMatrix[ blockX ][ blockY + side ] != 1 )
+			fillBlocks.push( [blockX, blockY + side ] );
+		else if(flag == 1)
+			tempX1 = (blockX + 1) * blockSize;
+		
+		if( blockMatrix[ blockX + 1 ][ blockY + side ] != 1 )
+			fillBlocks.push( [blockX + 1, blockY + side] );
+		else
+			tempX2 = tempX2 - blockSize;
+		
+		if(tempX1 < tempX2) {
+			console.log(tempX1+" "+tempX2);
+			loadAssets(tempX1, tempX2, tempY1, tempY2);
+		}
+		
+	}
+	
+}
+
+function loadAssets(x1, x2, y1, y2) {
+	updateAssetsCanvas("staticAssetsArchitects", x1, x2, y1, y2)
+	updateAssetsCanvas("staticAssetsTrees", x1, x2, y1, y2)
+}
+
+/*
+function loadAssets(x1, x2, y1, y2) {
+	ajaxCall("architectsVertual", x1, x2, y1, y2)
+}
+*/
+
+function updateAssetsCanvas(tableName, x1, x2, y1, y2) {
+
+	var c = document.getElementById("canvas2");
+	var ctx = c.getContext("2d");
+	ctx.lineWidth = "1";
+	ctx.strokeStyle = assetColor[tableName];
+	ctx.fillStyle = "#CCC";
+	
+	var assetCoordX;
+	var assetCoordY;
+	l1_asset_feed = 0;
+	
+	for( i = 0; i < Math.floor((Math.random() * 5) + 1); i++ ) {
+		assetCoordX = x1 + Math.floor( Math.random() * ( x2 - x1 ) + 1 );
+		assetCoordY = y1 + Math.floor( Math.random() * ( y2 - y1 ) + 1 );
+		ctx.strokeRect( 
+			(assetCoordX-l1_asset_feed) * canvasScale, 
+			(assetCoordY-l1_asset_feed) * canvasScale, 
+			(l1_asset_feed*2+1) * canvasScale, 
+			(l1_asset_feed*2+1) * canvasScale
+		);
+	}
+	
+}
+
+function ajaxCall(tableName, x1, x2, y1, y2) {
+	
+	if(x1 < 0) x1 = 0;
+	if(y1 < 0) y1 = 0;
+	x1 = x1 / blockSize;
+	y1 = y1 / blockSize;
+	
+	var world_gridInd = y1 * 10 + x1;
+	if( !(world_gridInd > -1 && world_gridInd < 100) ) world_gridInd = 0;
+	console.log(world_gridInd, x1, y1);
+	
+	var url = "/getArchitects";
+	var data = {"world_gridInd": world_gridInd };
+	
+	$.ajax({
+		url: url,
+		type: "POST",
+		data: data,
+	}).done(function(result) {
+		updateCanvas();
+		$("#status0").html('ajax call : '+JSON.stringify(result));
+		updateAssets(tableName, result);
+	});
+	
+}
+
+function updateAssets(tableName, result) {
+	var c = document.getElementById("canvas2");
+	var ctx = c.getContext("2d");
+	ctx.lineWidth = "1";
+	ctx.strokeStyle = assetColor[tableName];
+	ctx.fillStyle = "#CCC";
+	
+	var assetCoordX;
+	var assetCoordY;
+	l1_asset_feed = 0;
+	
+	Object.keys(result).forEach( function(key) {
+		assetCoordX = result[key].coordX;
+		assetCoordY = result[key].coordY;
+		ctx.strokeRect( 
+			(assetCoordX-l1_asset_feed) * canvasScale, 
+			(assetCoordY-l1_asset_feed) * canvasScale, 
+			(l1_asset_feed*2+1) * canvasScale, 
+			(l1_asset_feed*2+1) * canvasScale
+		);
+	});
+	
+}
+
+function onKeyDown() {
+	var layer2_feed = 5;
+	var layer2_c = document.getElementById("canvas3");
+	var layer2_ctx = layer2_c.getContext("2d");
+	layer2_ctx.lineWidth = "1";
+	layer2_ctx.strokeStyle = "red";
+	layer2_ctx.clearRect(
+		(coordX-layer2_feed-2) * canvasScale, 
+		(coordY-layer2_feed-2) * canvasScale, 
+		(layer2_feed*2+1+4) * canvasScale, 
+		(layer2_feed*2+1+4) * canvasScale
+	);
+	
+	var keyCode = event.which;
+	
+	if (keyCode == 65) {
+		//left_A
+		coordX -= ptrSpeed;
+	} else if (keyCode == 68) {
+		//right_D
+		coordX += ptrSpeed;
+	} else if (keyCode == 87) {
+		//up_W
+		coordY -= ptrSpeed;
+	} else if (keyCode == 83) {
+		//down_S
+		coordY += ptrSpeed;
+	} else if (keyCode == 32) {
+		//space for reset
+		coordX = 0;
+		coordY = 0;
+	} else {
+		return
+	}
+	
+	layer2_ctx.strokeRect(
+		(coordX-layer2_feed) * canvasScale, 
+		(coordY-layer2_feed) * canvasScale, 
+		(layer2_feed*2+1) * canvasScale, 
+		(layer2_feed*2+1) * canvasScale
+	);
+	layer2_feed = 0;
+	layer2_ctx.strokeRect(
+		(coordX-layer2_feed) * canvasScale, 
+		(coordY-layer2_feed) * canvasScale, 
+		(layer2_feed*2+1) * canvasScale, 
+		(layer2_feed*2+1) * canvasScale
+	);
+	
+	
+	blockX = Math.floor((coordX - canvas1.offsetLeft)/blockSize);
+	blockY = Math.floor((coordY - canvas1.offsetTop)/blockSize);
+	
+	$("#status1").html("block_xy : &nbsp" + blockX + " , " + blockY);
+	$("#status2").html("coord_xy : &nbsp" + coordX + " , " + coordY);
+	
+	if(blockX != pblockX) {
+		parseBlocks("x", blockX-pblockX);
+		pblockX = blockX;
+	}
+	else if(blockY != pblockY) {
+		parseBlocks("y", blockY-pblockY);
+		pblockY = blockY;
+	}
+	
+}
+
+
+function createCanvas() {
+	/*
+	canvas1, blocks
+	canvas2, assets
+	canvas3, user pointer
+	*/
+	$("#canvasArea").html(
+		'<div style="position: relative;">' +
+		'<canvas id="canvas1" ' +
+			'width="' + blockCountX * blockSize * canvasScale + '" ' +
+			'height="' + blockCountY * blockSize * canvasScale + '" ' +
+			'style="position: absolute; left: 0; top: 0; z-index: 0;"' +
+			'></canvas>' +
+		'<canvas id="canvas2" ' +
+			'width="' + blockCountX * blockSize * canvasScale + '" ' +
+			'height="' + blockCountY * blockSize * canvasScale + '" ' +
+			'style="position: absolute; left: 0; top: 0; z-index: 1;"' +
+			'></canvas>' +
+		'<canvas id="canvas3" ' +
+			'width="' + blockCountX * blockSize * canvasScale + '" ' +
+			'height="' + blockCountY * blockSize * canvasScale + '" ' +
+			'style="position: absolute; left: 0; top: 0; z-index: 2;"' +
+			'></canvas>' +
+		'</div>'
+	);
+}
+
+function initCanvas() {
+	fillBlocks = [
+		[blockX - 1, blockY - 1], [blockX, blockY - 1], [blockX + 1, blockY - 1],
+		[blockX - 1, blockY], [blockX, blockY], [blockX + 1, blockY],
+		[blockX - 1, blockY + 1], [blockX, blockY + 1], [blockX + 1, blockY + 1]
+	];
+	
+	loadAssets((blockX - 1) * blockSize, (blockX + 2) * blockSize, (blockY - 1) * blockSize, (blockY + 2) * blockSize);
+	
+	drawCanvas(1);
+}
+
+
+// fill the fillBlocks[] and cleanBlocks[], then use this function
+function updateCanvas() {
+	if(blockCleaning == true) {
+		for(i=0; i<cleanBlocks.length; i++)
+			if( cleanBlocks[i][0] >= 0 && cleanBlocks[i][0] < blockCountX && cleanBlocks[i][1] >= 0 && cleanBlocks[i][1] < blockCountY )
+				blockMatrix[cleanBlocks[i][0]][cleanBlocks[i][1]] = 2;
+	}	
+	
+	for(i=0; i<fillBlocks.length; i++)
+		if( fillBlocks[i][0] >= 0 && fillBlocks[i][0] < blockCountX && fillBlocks[i][1] >= 0 && fillBlocks[i][1] < blockCountY )
+			blockMatrix[fillBlocks[i][0]][fillBlocks[i][1]] = 1;
+	
+	
+	fillBlocks = [];
+	cleanBlocks = [];
+	drawCanvas();
+}
+
+
+function drawCanvas() {
+	var c = document.getElementById("canvas1");
+	var ctx = c.getContext("2d");
+	ctx.lineWidth = "1";
+	ctx.strokeStyle = "#CCC";
+	ctx.fillStyle = "#E0FFe9";
+	
+	for(j=0; j<blockCountY; j++) {
+		for(i=0; i<blockCountX; i++) {
+			if(blockMatrix[i][j] == 0)
+				ctx.strokeRect(
+					i*blockSize*canvasScale, 
+					j*blockSize*canvasScale, 
+					blockSize*canvasScale, 
+					blockSize*canvasScale
+				);
+			else if(blockMatrix[i][j] == 1) {
+				ctx.fillStyle = "#E0FFe9";
+				ctx.fillRect(
+					i*blockSize*canvasScale, 
+					j*blockSize*canvasScale, 
+					blockSize*canvasScale, 
+					blockSize*canvasScale
+				);
+			}
+			else if(blockMatrix[i][j] == 2) {
+				ctx.fillStyle = "#dbe1e3";
+				ctx.fillRect(
+					i*blockSize*canvasScale, 
+					j*blockSize*canvasScale, 
+					blockSize*canvasScale, 
+					blockSize*canvasScale
+				);
+			}
+				
+		}
+	}
+}
+
+
+</script>
+<style>
+#canvas1{border: 1px solid black}
+#canvas2{border: 1px solid black}
+#canvas3{border: 1px solid black}
+</style>
+<head>
+<body>
+<br>
+<div id='status1'>block_xy :</div>
+<div id='status2'>coord_xy :</div>
+<br>
+<div id="canvasArea"></div>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br>
+
+<pre>
+architects : blue
+trees      : orange
+</pre>
+<div id='status0' 'style="position: absolute; left: 0; top: 600;"'>ajax call . . .</div>
+</body>
+</html>
+

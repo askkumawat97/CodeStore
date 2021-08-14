@@ -1,0 +1,51 @@
+
+#### SERVER SIDE ####
+
+assets: the 3d objects
+
+"/public/about/3DSIM_db_usage.txt" for database schema
+"/public/scripts/variables.js" for common variables in server/client side
+
+
+the entire world is divided in fixed size "world_gridSize" of block.
+A single world_grid have size "world_gridSize*world_gridSize"
+
+asset location = ( world_gridInd, gridPosInd )
+world_gridInd = 2d Array considered in 1d Array
+gridPosInd = in world_grid, exact position, 2d Array considered in 1d Array
+
+"assetPath" table is stored in variable "values_assetPath"
+
+userLocId = only used for update the current location of user.
+usersData[ world_gridInd ][ userLocId ]
+userTableinDB( world_gridInd, gridPosInd, userLocId, ... )
+
+after each login, location of that user appended to perspective gridInd of usersData from database and userLocId( index after apppend ) is send to user, userLocId is index of usersData[] starting from 1, index 0 is list of free index.
+
+on each request only gridPosInd is update in usersData
+on each grid change by user:
+	the user's world_gridInd shifts in usersData, new index assign to that user.
+	world_gridInd, userLocId is update in database.
+	the new userLocId is send as response.
+
+
+assets searched by parentId, get all child of architectId: "SELECT * FROM architectTable WHERE parrentId = architectId"
+
+
+
+#### CLIENT SIDE ####
+
+on each move only gridPosInd is send to server
+on each grid change by user:
+	world_gridInd, userLocId is is send to server.
+	the new userLocId received from server and assigned to user.
+
+new grid is loaded by sending "world_gridInd" to server
+
+"viewManager":
+	2d grid that keep the record of loaded/unloaded grids.
+	used by assetRemover to free out of scope objects.
+	mapped on word_grid.
+	view shifts on each grid change by user.
+
+
